@@ -174,9 +174,9 @@ export function Sidebar() {
           <div className="flex items-center gap-[11px]">
             <OsMark size={34} className="shrink-0" />
             <div>
-              <div className="text-[13px] font-bold tracking-[0.14em]">FOUNDER OS</div>
+              <div className="text-[13px] font-bold tracking-[0.14em]">GRABMYBITCH</div>
               <div className="mt-[3px] whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.16em] text-os-dim">
-                v3 · Operator Mode
+                FOUNDER OS · Drop 001
               </div>
             </div>
           </div>

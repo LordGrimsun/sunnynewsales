@@ -21,8 +21,8 @@ const fontMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'FOUNDER OS',
-  description: 'Personal operating system and AI agent command center for a single person company',
+  title: 'GRABMYBITCH // Founder OS',
+  description: 'Streetwear brand command center and autonomous dropshipping engine',
 };
 
 /** The palette builds its own Go-to group from lib/nav; the layout only feeds
