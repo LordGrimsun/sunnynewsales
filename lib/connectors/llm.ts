@@ -236,7 +236,7 @@ export function getLlmProvider(): LlmProvider {
   const name = process.env.LLM_PROVIDER;
   if (name === 'stub') return stubLlmProvider;
   const geminiKey = resolveGeminiKey();
-  if (geminiKey && (name === 'gemini' || !process.env.AI_GATEWAY_API_KEY)) {
+  if (geminiKey) {
     return createGeminiProvider(geminiKey);
   }
   return createGatewayProvider();

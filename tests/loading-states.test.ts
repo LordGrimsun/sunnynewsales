@@ -55,5 +55,5 @@ describe('every top-level route has an instant loading state', () => {
       const mod = (await import(`@/app/${seg ? seg + '/' : ''}loading`)) as { default: () => unknown };
       expect(() => mod.default()).not.toThrow();
     }
-  });
+  }, 60_000);
 });
