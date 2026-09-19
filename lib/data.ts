@@ -17,8 +17,13 @@ export function getDb(): FounderDb {
   // On Railway the volume persists, so the DB is durable, not per-cold-start.
   // FOUNDER_OS_DB still overrides everything. See lib/paths.ts.
   const dbPath = resolveDbPath('founder-os.db', process.env.FOUNDER_OS_DB);
-  if (dbPath !== ':memory:') fs.mkdirSync(path.dirname(dbPath), { recursive: true });
-  instance = openDb(dbPath);
+  try {
+    if (dbPath !== ':memory:') fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+    instance = openDb(dbPath);
+  } catch (err) {
+    console.warn(`[getDb] Could not open database at ${dbPath}, falling back to in-memory:`, err);
+    instance = openDb(':memory:');
+  }
   // Seed on first touch so a fresh clone boots looking alive. Each clause
   // back-fills databases created before that table existed; seedDatabase is
   // idempotent (INSERT OR REPLACE), so re-running only adds what's missing.

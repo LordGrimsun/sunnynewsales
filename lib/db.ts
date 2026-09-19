@@ -660,7 +660,17 @@ function rowToAgent(row: AgentRow): Agent {
 
 export function openDb(path: string) {
   const db = new Database(path);
-  db.pragma('journal_mode = WAL');
+  try {
+    if (process.env.VERCEL) {
+      db.pragma('journal_mode = MEMORY');
+    } else {
+      db.pragma('journal_mode = WAL');
+    }
+  } catch {
+    try {
+      db.pragma('journal_mode = DELETE');
+    } catch {}
+  }
   db.exec(DDL);
   migrateAgentsTable(db);
   migrateFunnelContactsTable(db);

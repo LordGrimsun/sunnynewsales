@@ -48,6 +48,7 @@ const ROUTES: RouteEntry[] = [
   { route: 'board/tasks', load: () => import('@/app/api/board/tasks/route'), url: 'http://localhost/api/board/tasks' },
   { route: 'brain', load: () => import('@/app/api/brain/route'), url: 'http://localhost/api/brain' },
   { route: 'brand-deals', load: () => import('@/app/api/brand-deals/route'), url: 'http://localhost/api/brand-deals' },
+  { route: 'debug', load: () => import('@/app/api/debug/route'), url: 'http://localhost/api/debug' },
   { route: 'workflows', load: () => import('@/app/api/workflows/route'), url: 'http://localhost/api/workflows' },
   { route: 'blueprint', load: () => import('@/app/api/blueprint/route'), url: 'http://localhost/api/blueprint' },
   { route: 'brain/satellites', load: () => import('@/app/api/brain/satellites/route'), url: 'http://localhost/api/brain/satellites' },

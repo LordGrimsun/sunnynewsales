@@ -136,9 +136,18 @@ type DoneItem = { key: string; time: number; head: string; headClass: string; bo
 export default async function HomePage() {
   const db = getDb();
   const [connections, overview, feed, stripe] = await Promise.all([
-    allConnectorStatuses(),
-    createGBrainProvider().overview(),
-    gatherCommsFeed(),
+    allConnectorStatuses().catch(() => []),
+    createGBrainProvider().overview().catch(() => ({
+      store: { path: '', totalFiles: 0, folders: [] },
+      doctor: {
+        connected: false,
+        status: 'unreachable',
+        healthScore: null,
+        checks: [],
+        detail: 'GBrain offline',
+      },
+    })),
+    gatherCommsFeed().catch(() => []),
     // Fail-soft: no key (or a Stripe outage) means no charges row, never a 500.
     stripeSnapshot().catch(() => null),
   ]);
