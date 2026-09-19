@@ -85,6 +85,58 @@ function resolveGatewayKey(): string | undefined {
   return resolveCred(GATEWAY_KEY, [CRED_FILES.brainAgent, CRED_FILES.socialMedia]);
 }
 
+export function resolveGeminiKey(): string | undefined {
+  return (
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_API_KEY ||
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    resolveCred('GEMINI_API_KEY', [CRED_FILES.brainAgent]) ||
+    resolveCred('GOOGLE_API_KEY', [CRED_FILES.brainAgent])
+  );
+}
+
+export function createGeminiProvider(apiKey: string): LlmProvider {
+  return {
+    name: 'gemini',
+    async chat(req) {
+      const model = process.env.GEMINI_MODEL ?? process.env.LLM_MODEL ?? 'gemini-1.5-flash';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+      const contents = req.messages.map((m) => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }],
+      }));
+
+      const body: Record<string, unknown> = { contents };
+      if (req.system) {
+        body.systemInstruction = { parts: [{ text: req.system }] };
+      }
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Gemini API error (${res.status}): ${errText}`);
+      }
+
+      const data = await res.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      return {
+        text,
+        toolCalls: [],
+        usage: {
+          inputTokens: data.usageMetadata?.promptTokenCount ?? 0,
+          outputTokens: data.usageMetadata?.candidatesTokenCount ?? 0,
+        },
+      };
+    },
+  };
+}
+
 /** Stub trigger: a user message containing `use-tool:<name>` fires that tool. */
 const STUB_TRIGGER = /use-tool:(\S+)/;
 
@@ -181,8 +233,12 @@ export function createGatewayProvider(model?: string): LlmProvider {
 }
 
 export function getLlmProvider(): LlmProvider {
-  const name = process.env.LLM_PROVIDER ?? 'gateway';
+  const name = process.env.LLM_PROVIDER;
   if (name === 'stub') return stubLlmProvider;
+  const geminiKey = resolveGeminiKey();
+  if (geminiKey && (name === 'gemini' || !process.env.AI_GATEWAY_API_KEY)) {
+    return createGeminiProvider(geminiKey);
+  }
   return createGatewayProvider();
 }
 
@@ -192,17 +248,22 @@ export function chat(req: LlmChatRequest): Promise<LlmChatResult> {
 
 export async function llmStatus(): Promise<ConnectorStatus> {
   if (GATED) return gatedConnected('llm', 'LLM Gateway', 'orchestration', 'Claude Sonnet · via AI Gateway');
-  const base = { id: 'llm', name: 'LLM (Gateway)', kind: 'orchestration' } as const;
+  const base = { id: 'llm', name: 'LLM Engine', kind: 'orchestration' } as const;
   if (process.env.LLM_PROVIDER === 'stub') {
     return { ...base, state: 'connected', detail: 'stub provider active (tests)' };
+  }
+  const geminiKey = resolveGeminiKey();
+  if (geminiKey) {
+    const model = process.env.GEMINI_MODEL ?? 'gemini-1.5-flash';
+    return { ...base, name: 'Google Gemini', state: 'connected', detail: `Google Gemini connected · ${model}` };
   }
   const key = resolveGatewayKey();
   if (!key) {
     return {
       ...base,
       state: 'not_configured',
-      detail: 'Set AI_GATEWAY_API_KEY in .env.local to enable agent chat via the Vercel AI Gateway.',
+      detail: 'Set GEMINI_API_KEY or AI_GATEWAY_API_KEY to enable live agent chat.',
     };
   }
-  return { ...base, state: 'connected', detail: `Vercel AI Gateway · default model ${defaultModel()}` };
+  return { ...base, name: 'LLM (Gateway)', state: 'connected', detail: `Vercel AI Gateway · default model ${defaultModel()}` };
 }
