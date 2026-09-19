@@ -22,7 +22,7 @@ const BRANCH_MAX = 80;
 
 const defaultExec: ExecFn = (cmd, args) =>
   new Promise((resolve) => {
-    execFile(cmd, args, { timeout: 60_000, maxBuffer: 4 * 1024 * 1024 }, (err, stdout, stderr) => {
+    execFile(cmd, args, { timeout: 60_000, maxBuffer: 4 * 1024 * 1024, shell: process.platform === 'win32' }, (err, stdout, stderr) => {
       resolve({
         stdout: stdout?.toString() ?? '',
         // `||` not `??`: on spawn failure stderr is empty — keep the real error

@@ -57,7 +57,7 @@ describe('readPluginSkills', () => {
     expect(alpha!.name).toBe('alpha');
     expect(alpha!.description).toBe('First plugin skill.');
     expect(alpha!.group).toBe('Plugin · myplugin');
-    expect(alpha!.path.endsWith('skills/alpha/SKILL.md')).toBe(true);
+    expect(alpha!.path.replace(/\\/g, '/').endsWith('skills/alpha/SKILL.md')).toBe(true);
   });
 
   it('lists each skill once even when the manifest has duplicate entries', () => {

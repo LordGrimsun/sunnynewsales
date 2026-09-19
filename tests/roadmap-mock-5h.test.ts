@@ -125,7 +125,7 @@ describe('PATCH /api/roadmap', () => {
 
   afterAll(() => {
     delete process.env.FOUNDER_OS_DB;
-    fs.rmSync(dir, { recursive: true, force: true });
+    try { fs.rmSync(dir, { recursive: true, force: true, maxRetries: 3, retryDelay: 50 }); } catch {}
   });
 
   const patch = async (body: unknown) => {

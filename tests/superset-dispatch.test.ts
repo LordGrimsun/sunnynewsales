@@ -127,12 +127,20 @@ describe('POST /api/conductor/dispatch', () => {
 
   test('201 with workspaceId + branch when the CLI succeeds (fake bin)', async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'superset-fake-'));
-    const bin = path.join(dir, 'superset');
-    fs.writeFileSync(
-      bin,
-      '#!/bin/sh\nif [ "$1" = "projects" ]; then echo \'[{"id":"proj-9","name":"founder-os"}]\'; else echo \'{"id":"ws-9"}\'; fi\n',
-      { mode: 0o755 },
-    );
+    const isWin = process.platform === 'win32';
+    const bin = path.join(dir, isWin ? 'superset.cmd' : 'superset');
+    if (isWin) {
+      fs.writeFileSync(
+        bin,
+        '@echo off\r\nif "%1"=="projects" (\r\n  echo [{"id":"proj-9","name":"founder-os"}]\r\n) else (\r\n  echo {"id":"ws-9"}\r\n)\r\n',
+      );
+    } else {
+      fs.writeFileSync(
+        bin,
+        '#!/bin/sh\nif [ "$1" = "projects" ]; then echo \'[{"id":"proj-9","name":"founder-os"}]\'; else echo \'{"id":"ws-9"}\'; fi\n',
+        { mode: 0o755 },
+      );
+    }
     vi.stubEnv('SUPERSET_BIN', bin);
     const res = await post({ request: 'Make the sidebar blue' });
     expect(res.status).toBe(201);

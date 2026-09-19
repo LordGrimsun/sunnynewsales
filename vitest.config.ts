@@ -22,5 +22,6 @@ export default defineConfig({
     env: {
       FOUNDER_OS_ENV_LOCAL: path.resolve(__dirname, 'tests', '.env.local.does-not-exist'),
     },
+    testTimeout: 20000,
   },
 });

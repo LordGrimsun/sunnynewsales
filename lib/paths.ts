@@ -24,5 +24,8 @@ export function resolveDbPath(
   override?: string,
   env: Record<string, string | undefined> = process.env,
 ): string {
-  return override ?? path.join(dataDir(env), filename);
+  if (override) return override;
+  const dir = dataDir(env);
+  if (dir.startsWith('/')) return path.posix.join(dir, filename);
+  return path.join(dir, filename);
 }
