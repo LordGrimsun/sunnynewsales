@@ -14,6 +14,7 @@
  */
 export async function register() {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return;
+  if (process.env.VERCEL) return;
   if (process.env.FOUNDER_OS_SKIP_WARMUP === '1') return;
 
   const port = process.env.PORT ?? '4100';
