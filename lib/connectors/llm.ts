@@ -247,7 +247,6 @@ export function chat(req: LlmChatRequest): Promise<LlmChatResult> {
 }
 
 export async function llmStatus(): Promise<ConnectorStatus> {
-  if (GATED) return gatedConnected('llm', 'LLM Gateway', 'orchestration', 'Claude Sonnet · via AI Gateway');
   const base = { id: 'llm', name: 'LLM Engine', kind: 'orchestration' } as const;
   if (process.env.LLM_PROVIDER === 'stub') {
     return { ...base, state: 'connected', detail: 'stub provider active (tests)' };
@@ -257,6 +256,7 @@ export async function llmStatus(): Promise<ConnectorStatus> {
     const model = process.env.GEMINI_MODEL ?? 'gemini-1.5-flash';
     return { ...base, name: 'Google Gemini', state: 'connected', detail: `Google Gemini connected · ${model}` };
   }
+  if (GATED) return gatedConnected('llm', 'LLM Gateway', 'orchestration', 'Claude Sonnet · via AI Gateway');
   const key = resolveGatewayKey();
   if (!key) {
     return {
